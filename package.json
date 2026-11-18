@@ -1,0 +1,7 @@
+{
+  "name": "techops-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Public Technical Operations Dashboard with SharePoint workbook sync",
+  "dependencies": { "xlsx": "0.18.5" }
+}
