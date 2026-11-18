@@ -1,15 +1,32 @@
 # Technical Operations Dashboard
 
-Public, static TechOps dashboard hosted on GitHub Pages. A GitHub Actions workflow downloads the configured SharePoint workbook, converts every worksheet to JSON, and publishes the dashboard.
+Public static dashboard hosted on GitHub Pages. GitHub Actions downloads the SharePoint workbook through Microsoft Graph, converts every worksheet to JSON, and publishes the site.
 
-## Setup
-1. In repository Settings → Pages, set the build and deployment source to **GitHub Actions**.
-2. Open Actions and run **Sync SharePoint workbook and publish dashboard** once using Run workflow.
-3. After a successful deployment, open Settings → Pages for the public URL.
+## One-time Microsoft setup
 
-The workflow is scheduled every five minutes, but GitHub may delay scheduled jobs. The dashboard checks its published data snapshot every five minutes; that browser refresh does not itself trigger a workbook download.
+The SharePoint sharing page is not a direct XLSX download: it returns HTML. Automated download therefore uses Microsoft Graph authentication.
+
+Ask your Microsoft 365 / Entra administrator to:
+1. Register an application in Microsoft Entra ID.
+2. Add Microsoft Graph **Application** permission sufficient to read the workbook (typically `Files.Read.All` or `Sites.Read.All`, depending on tenant policy) and grant admin consent. If the tenant's shared-item endpoint requires a broader permission, the administrator should confirm the least-privileged supported option.
+3. Provide the Tenant ID, Application (client) ID, and a client secret.
+
+Then add these repository Actions secrets under Settings → Secrets and variables → Actions:
+- `MS_TENANT_ID`
+- `MS_CLIENT_ID`
+- `MS_CLIENT_SECRET`
+- `SHAREPOINT_SHARE_URL` (the complete Anyone-with-the-link view URL)
+
+Never commit the client secret or other credentials to this public repository.
+
+## Publish
+
+1. In Settings → Pages, choose **GitHub Actions** as the source.
+2. Run **Sync SharePoint workbook and publish dashboard** from the Actions tab.
+3. After a successful run, open Settings → Pages for the public site URL.
+
+The workflow is scheduled every five minutes, but GitHub may delay scheduled runs. The browser refreshes the published snapshot every five minutes; that does not itself download the workbook.
 
 ## Public data notice
-This repository and the deployed website are public. The sync publishes every populated row and column from every worksheet, including IMEIs and any other workbook fields. The source SharePoint URL is an Anyone link and is stored in the workflow script. Publish only with the workbook owner's authorization. Do not add passwords, tokens, or private credentials.
 
-Node.js is used only on GitHub-hosted runners; no local server or local Node installation is required.
+This repository and website are public. Every populated row and column from every worksheet is published, including IMEIs and other workbook fields. Anyone may view, copy, or redistribute the published data. Publish only with the workbook owner's authorization.
